@@ -1,0 +1,106 @@
+defaults:
+ - _self_
+
+hydra:
+ run:
+   dir: ./logs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+slurm:
+ enabled: False
+
+wandb:
+ enabled: True
+ entity: saranga7
+ project: "SMALA_Reacq_AugEmb"
+ run_name: null
+
+data:
+ random_seed: 19
+ dataset: rawmicroscope
+ fold_index: 0
+ classification_type: "subVneg"  
+ root_dir: "/projects/smala3/Saranga/preprocessed_data"
+ data_train_filepath: null
+ data_test_filepath: 
+ metadata_filepath: "metadata/11_12_2025/smmala-reimaged-632_slides-metadata_19_05_2025_Eleanor-covariables.csv"
+ aug_embeddings_path: null
+ embeddings_path: null
+ num_workers: 8
+ img_channels: 3
+ data_collection_method: "slide"  # ["image", "slide"]
+ num_imgs_per_slide: 10
+ num_folds: 1
+ shuffle_labels: False
+ use_hard_balancing: False
+ use_monte_carlo: false
+ use_wce: false
+ num_classes: 3 # original number of classes
+ class_idx: [0, 1]  # [0,1] for binary, [0,1,2] for 3-classes
+ merge_classes_for_binary: false  # if true, merges classes according to class_merge_mapping
+ class_merge_mapping:  # mapping for class fusion
+   0: [0]      
+   1: [1, 2]
+ skip_validation: true
+
+ 
+model:
+ use_imgs_or_embeddings: "embeddings"  # ["images", "embeddings"]
+ name: 'dinov3_vitb16'
+ weights_path: "./weights/"
+ offline: false
+ freeze_layers: true
+ use_complex_head: 2
+ use_lora: false
+ lora_rank: 4
+ lora_alpha: 0.2
+ lora_num_blocks: 3
+ encoder_weights_path: null
+
+ dinov3_repo_path: "/projects/smala/Saranga/dinov3"
+
+ # Attention and covariables config
+ attention:
+   enabled: true
+   num_heads: 4
+   dropout: 0.1
+
+ # Slide Aggregation
+ slide_aggregator_method: "median"
+
+optimizer:
+ name: "adam"
+ batch_size: 256
+ lr: 1e-5
+ eta_min: 1e-7
+ weight_decay: 0.01
+
+training:
+ enabled: true
+ max_epochs: 500
+ use_advanced_augmentation: true
+ use_gradual_unfreezing: false
+ unfreeze_strategy: "fixed" 
+ unfreeze_adaptive_decay_rate: 100
+ unfreeze_epoch_interval: 10
+ use_weight_decay: true
+ use_lr_scheduler: false
+ loss_type: "ce"
+ label_smoothing: 0.1
+ use_temperature_scaling: false
+ calibrated_weights_filename: 'calibrated_weights.pth'
+ analysis_interval: 400
+ weights_filename: "weights_${model.slide_aggregator_method}_${data.classification_type}_fold${data.fold_index}_seed${data.random_seed}.pth"
+ log_dir: "./logs"
+
+testing:
+ enabled: true
+ weights_filename: "lol"
+
+confidence:
+ enabled: false
+ compute_confidence_on: "logits" # ["probs", "logits"]
+ confidence_type: "tabpfn"
+ use_mc_dropout: false
+ mc_samples: 50
+
+devices: [0]

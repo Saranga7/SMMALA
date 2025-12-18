@@ -1,0 +1,33 @@
+get_embeddings/logs/
+get_embeddings/output_logs/
+preprocessed_data/embeddings/
+
+.dockerignore
+# *.lock
+# *.ipynb
+.DS_Store
+._.DS_Store
+*.xml
+*.jpg
+*.png
+*.pyc
+*.ckpt
+*.pth
+*.csv
+*.tiff
+*.svg
+
+/weights
+/notebooks
+/outputs
+/logs
+/output
+/.vscode
+/.github
+/docs
+/wandb
+/results
+/output_logs
+viz_dataset/thumbs
+
+dinov3/

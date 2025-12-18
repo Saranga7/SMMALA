@@ -1,0 +1,35 @@
+defaults:
+ - _self_
+
+hydra:
+ run:
+   dir: ./logs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+slurm:
+ enabled: False
+
+wandb:
+ enabled: False
+
+augmentations:
+  enable_augmentation: True # if True, k augmented images' embeddings will be computed per image (used for training)
+  num_augmentations: 10
+  save_augmented_images: False
+
+model:
+ name: 'dinov3_vitb16'
+ weights_path: "./weights/"
+ ssl_pre_trained_encoder_path: null
+ offline: false
+ freeze_layers: true
+ dinov3_repo_path: "/projects/smala/Saranga/dinov3"
+
+data:
+ img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
+ test_set_img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
+ out_dir: "/projects/smala3/Saranga/public_repo_smala/preprocessed_data/embeddings/"
+ num_workers: 8
+ batch_size: 128
+ random_seed: 7
+
+devices: [0]
