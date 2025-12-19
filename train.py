@@ -550,7 +550,7 @@ def one_epoch(
             incorrect_probs
         )
     """
-    do_mc_dropout = (mode != "train") and cfg.confidence.use_mc_dropout
+    do_mc_dropout = (mode != "train") and cfg.testing.use_mc_dropout
 
     if mode == "train" or do_mc_dropout:
         model.train()
@@ -581,7 +581,7 @@ def one_epoch(
             mc_probs_list = []
             mc_outputs_list = []
 
-            num_mc_samples = cfg.confidence.mc_samples
+            num_mc_samples = cfg.testing.mc_samples
 
             for mc_sample in range(num_mc_samples):
                 # compute embeddings on the last MC sample if we actually want embeddings

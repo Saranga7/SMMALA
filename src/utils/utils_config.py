@@ -18,14 +18,6 @@ def setup_environment(cfg):
         + time.strftime("%Y%m%d_%H%M%S")
         + ".pth"
     )
-    cfg.training.calibrated_weights_filename = (
-        cfg.training.calibrated_weights_filename.split(".")[0]
-        + "_"
-        + cfg.model.name
-        + "_"
-        + time.strftime("%Y%m%d_%H%M%S")
-        + ".pth"
-    )
     cfg.data.random_seed = int(cfg.data.random_seed)
     cfg.data.num_classes = int(cfg.data.num_classes)
     cfg.data.num_imgs_per_slide = int(cfg.data.num_imgs_per_slide)

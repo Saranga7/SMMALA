@@ -89,8 +89,6 @@ training:
  use_lr_scheduler: false
  loss_type: "ce"
  label_smoothing: 0.1
- use_temperature_scaling: false
- calibrated_weights_filename: 'calibrated_weights.pth'
  analysis_interval: 400
  weights_filename: "weights_${model.slide_aggregator_method}_${data.classification_type}_fold${data.fold_index}_seed${data.random_seed}.pth"
  log_dir: "./logs"
@@ -98,6 +96,8 @@ training:
 testing:
  enabled: true
  weights_filename: "lol"
+ use_mc_dropout: false
+ mc_samples: 50
 
 confidence:
  enabled: false

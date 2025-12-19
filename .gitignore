@@ -3,7 +3,7 @@ get_embeddings/output_logs/
 preprocessed_data/embeddings/
 
 .dockerignore
-# *.lock
+*.lock
 # *.ipynb
 .DS_Store
 ._.DS_Store
