@@ -17,7 +17,7 @@ preprocessed_data/embeddings/
 *.svg
 *.log
 
-/weights
+weights/custom/
 /notebooks
 /outputs
 /logs

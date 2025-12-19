@@ -10,7 +10,7 @@ This project is a collaboration between the [IRD](https://www.ird.fr) and [ENS U
 
 ### 1️⃣ Clone the repository (with submodules)
 
-The project depends on the `dinov3` submodule. To ensure reproducibility, clone the repository **with submodules**:
+The project depends on the [`dinov3`](https://github.com/facebookresearch/dinov3) submodule. To ensure reproducibility, clone the repository **with submodules**:
 
 ```bash
 git clone --recurse-submodules https://github.com/Saranga7/SMMALA.git
