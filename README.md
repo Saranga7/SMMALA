@@ -24,4 +24,14 @@ git submodule update --init --recursive
 
 ### 2️⃣ Download dinov3 weights
 
-After cloning, download the pretrained dinov3 weights and place them in the following path (or as configured in your cfg):
+After cloning, download the pretrained dinov3 weights and place them in weights/pretrained (or as configured in your cfg). Depending on which dinov3 encoder backbones you want to experiment with, it should look somthing like this:
+
+```
+weights/pretrained
+├── dinov3_vit7b16.pth
+├── dinov3_vitb16.pth
+├── dinov3_vith16plus.pth
+├── dinov3_vitl16.pth
+├── dinov3_vits16plus.pth
+└── dinov3_vits16.pth
+```
