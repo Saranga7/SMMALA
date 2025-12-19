@@ -1,12 +1,26 @@
-#  SMMALA 🦠 Detection of Malaria Infection from parasite-free blood smears
+# SMMALA 🦠 Detection of Malaria Infection from Parasite-Free Blood Smears
 
 ## Introduction
 
-The project is a collaboration between the [IRD](https://www.ird.fr) and [ENS Ulm](https://www.ens.psl.eu).
+This project is a collaboration between the [IRD](https://www.ird.fr) and [ENS Ulm](https://www.ens.psl.eu).
 
-### Steps
+---
+
+## Setup Instructions
+
+### 1️⃣ Clone the repository (with submodules)
+
+The project depends on the `dinov3` submodule. To ensure reproducibility, clone the repository **with submodules**:
+
+```bash
+git clone --recurse-submodules <your-repo-url>
 
 
-git clone dinov3
+If you already cloned without submodules, initialize them with:
 
-download dinov3 weights
+```bash
+git submodule update --init --recursive
+
+### 2️⃣ Download dinov3 weights
+
+After cloning, download the pretrained dinov3 weights and place them in the following path (or as configured in your cfg):
