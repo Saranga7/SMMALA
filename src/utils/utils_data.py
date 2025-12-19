@@ -9,6 +9,7 @@ from pathlib import Path
 from PIL import Image
 import random
 
+from src.data.splitters.microscope_kfold_splitter import MicroscopeKFoldSplitter
 from src.data.classification_dataloader import prepare_datasets
 from src.data.custom_datasets import RawMicroscope 
 from src.data.collate import collate_func, collate_func_embeddings

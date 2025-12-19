@@ -23,8 +23,7 @@ git submodule update --init --recursive
 ```
 
 ### 2️⃣ Download dinov3 weights
-
-After cloning, download the pretrained dinov3 weights and place them in weights/pretrained (or as configured in your cfg). Depending on which dinov3 encoder backbones you want to experiment with, it should look somthing like this:
+After cloning, download the pretrained dinov3 weights and place them in `weights/pretrained`. Depending on which dinov3 encoder backbones you want to experiment with, it should look somthing like this:
 
 ```
 weights/pretrained
@@ -33,5 +32,37 @@ weights/pretrained
 ├── dinov3_vith16plus.pth
 ├── dinov3_vitl16.pth
 ├── dinov3_vits16plus.pth
-└── dinov3_vits16.pth
+└── dinov3_vits16.pthn
 ```
+
+### 2️⃣ Download data
+
+Download the images from [here](https://huggingface.co/datasets/nicoboou/smmala/tree/main). Preferably store the images at `preprocessed_data/dataset`, otherwise mandatorily set data.dataset_path in the config.
+
+### 3️⃣ Setup virtual environment
+
+### 4️⃣ Generate embeddings
+
+Adjust the config file: `configs/get_image_embeddings.yaml`. Then,
+
+```bash
+cd get_embeddings
+bash run_get_image_embeddings.sh
+cd ..
+```
+
+### 5️⃣ Train and Test
+
+Adjust the config file: `configs/emb_subVneg.yaml`.
+Then,
+
+```bash
+python train.py --config-path="configs/train" --config-name="emb_subVneg.yaml" 
+```
+
+An example script that uses `dinov3_vitb16` with a `mean` aggregation strategy:
+
+```bash
+bash run_training.sh
+```
+

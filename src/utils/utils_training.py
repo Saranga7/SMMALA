@@ -7,8 +7,6 @@ from omegaconf import DictConfig
 from torch import nn
 
 # Import utility functions
-from src.utils.utils_confidence_thresholding import compute_grade_sensitive_confidence
-from src.utils.temperature_scaling import calibrate_model
 from src.common.losses.focal import FocalLoss
 from src.common.losses.sosr import SOSRLoss
 from src.utils.utils_eval import extract_image_features
@@ -17,33 +15,6 @@ from src.utils.utils_model import should_merge_classes, merge_classes_by_mapping
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-
-
-def initialize_calibration(
-    cfg: DictConfig,
-    model: nn.Module,
-    dataloader,
-    criterion,
-    device: torch.device,
-    num_classes: int,
-) -> Optional[Any]:
-    """
-    Initialize calibration parameters if temperature scaling is used.
-
-    Args:
-        cfg (DictConfig): Configuration object.
-        model (nn.Module): Model to calibrate.
-        dataloader (torch.utils.data.DataLoader): Data loader.
-        criterion (torch.nn.Module): Loss function.
-        device (torch.device): Device to run computations on.
-        num_classes (int): Number of classes.
-
-    Returns:
-        Optional[Any]: Calibration results or None.
-    """
-    if cfg.training.use_temperature_scaling and cfg.training.loss_type == "ce":
-        return calibrate_model(cfg, model, dataloader, criterion, device, num_classes)
-    return None
 
 
 def process_batch(
@@ -218,21 +189,6 @@ def get_loss_and_prediction(
     return loss, probs, preds
 
 
-def add_grade_sensitive_confidence(cfg: DictConfig, outputs: torch.Tensor) -> torch.Tensor:
-    """
-    Compute grade-sensitive confidence scores if enabled in config.
-
-    Args:
-        cfg (DictConfig): Configuration object.
-        outputs (torch.Tensor): Model outputs.
-
-    Returns:
-        torch.Tensor: Confidence scores.
-    """
-    if cfg.testing.grade_sensitive_confidence:
-        return compute_grade_sensitive_confidence(outputs)
-    else:
-        return torch.softmax(outputs, dim=1)
 
 
 def save_best_model(

@@ -8,8 +8,6 @@ from pathlib import Path
 from src.utils.utils_visualization import (
     plot_confusion_matrix,
     plot_roc_curve,
-    plot_before_after_comparison,
-    plot_calibration_curve,
     plot_precision_recall_curve,
 )
 
@@ -113,73 +111,6 @@ def log_metrics(metrics, epoch=None, phase="train", log_file="training_logs.txt"
                 pr_curve_fig = plot_precision_recall_curve(metrics["all_labels"], metrics["all_probs"], num_classes)
                 pr_curve_fig.savefig(image_folder / f"{phase}_pr_curve_epoch.png")
                 plt.close(pr_curve_fig)
-
-
-def log_calibration_plots(calibration_results, cfg):
-    nll_comparison = plot_before_after_comparison(
-        calibration_results["before_calibration"]["nll"],
-        calibration_results["after_calibration"]["nll"],
-        "NLL",
-    )
-    ece_comparison = plot_before_after_comparison(
-        calibration_results["before_calibration"]["ece"],
-        calibration_results["after_calibration"]["ece"],
-        "ECE",
-    )
-    accuracy_comparison = plot_before_after_comparison(
-        calibration_results["before_calibration"]["accuracy"],
-        calibration_results["after_calibration"]["accuracy"],
-        "Accuracy",
-    )
-    auc_comparison = plot_before_after_comparison(
-        calibration_results["before_calibration"]["auc"],
-        calibration_results["after_calibration"]["auc"],
-        "AUC",
-    )
-
-    before_calibration_fig = plot_calibration_curve(
-        calibration_results["labels"],
-        calibration_results["before_calibration"]["probs"],
-        n_bins=10,
-        title="Calibration Curve Before Temperature Scaling",
-    )
-    after_calibration_fig = plot_calibration_curve(
-        calibration_results["labels"],
-        calibration_results["after_calibration"]["probs"],
-        n_bins=10,
-        title="Calibration Curve After Temperature Scaling",
-    )
-
-    if cfg.wandb.enabled and not cfg.slurm.enabled:
-        wandb.log(
-            {
-                "calibration/nll_comparison": wandb.Image(nll_comparison),
-                "calibration/ece_comparison": wandb.Image(ece_comparison),
-                "calibration/accuracy_comparison": wandb.Image(accuracy_comparison),
-                "calibration/auc_comparison": wandb.Image(auc_comparison),
-                "calibration/before_curve": wandb.Image(before_calibration_fig),
-                "calibration/after_curve": wandb.Image(after_calibration_fig),
-            }
-        )
-    else:
-        image_folder = Path(cfg.training.log_dir) / "log_images"
-        image_folder.mkdir(parents=True, exist_ok=True)
-
-        nll_comparison.savefig(image_folder / "nll_comparison.png")
-        ece_comparison.savefig(image_folder / "ece_comparison.png")
-        accuracy_comparison.savefig(image_folder / "accuracy_comparison.png")
-        auc_comparison.savefig(image_folder / "auc_comparison.png")
-        before_calibration_fig.savefig(image_folder / "before_calibration_curve.png")
-        after_calibration_fig.savefig(image_folder / "after_calibration_curve.png")
-
-        logger.info(f"Calibration plots saved to: {image_folder}")
-
-    plt.close(nll_comparison)
-    plt.close(ece_comparison)
-    plt.close(accuracy_comparison)
-    plt.close(auc_comparison)
-    plt.close(before_calibration_fig)
-    plt.close(after_calibration_fig)
 
 
 def send_logs_to_wandb(cfg, flat_config):

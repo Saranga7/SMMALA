@@ -13,26 +13,17 @@ from tqdm import tqdm
 import numpy as np
 import wandb
 import matplotlib.pyplot as plt
-from sklearn.metrics import brier_score_loss
 import pandas as pd
 
-from src.utils.utils_confidence_thresholding import (
-    compute_confidences,
-    compute_slide_stats,
-    evaluate_confidence_thresholding,
-    compute_performance_by_confidence,
-)
 from src.utils.utils_training import save_best_model, process_batch
 from src.utils.utils_logging import (
     TqdmToLogger,
     log_metrics,
     send_logs_to_wandb,
-    log_calibration_plots,
 )
 from src.data.classification_dataloader import prepare_dataloaders
 from src.utils.utils_data import prepare_datasets_and_transforms, get_test_dataloader
 from src.utils.utils_config import setup_environment, setup_device
-from src.utils.temperature_scaling import calibrate_model, calibrate
 from src.utils.utils_eval import (
     calculate_metrics,
     calculate_metrics_by_slide,
@@ -400,246 +391,6 @@ def test_one_epoch(
     )
     log_metrics(initial_metrics, epoch=0, phase="test_initial", cfg=cfg, num_classes=num_classes)
 
-    # --------------------------------------------------------------------------------------------------------------- #
-    # ------------------------------------------------ Calibration Phase -------------------------------------------- #
-    # --------------------------------------------------------------------------------------------------------------- #
-
-    if cfg.confidence.enabled or cfg.training.use_temperature_scaling:
-        train_dataset, cal_dataset = prepare_datasets_and_transforms(cfg)
-        train_loader, val_loader = prepare_dataloaders(
-            cfg,
-            train_dataset,
-            cal_dataset,
-            batch_size=cfg.optimizer.batch_size,
-            num_workers=cfg.data.num_workers,
-        )
-
-        skip_validation = val_loader is None
-        if skip_validation:
-            logger.info("Validation dataset not available for calibration - skipping calibration phase")
-
-    temperature_layer = None
-    if cfg.training.use_temperature_scaling and not skip_validation:
-        logger.info("Calibrating model with temperature scaling...")
-        criterion_calibration = setup_criterion(cfg, num_classes, train_loader.dataset, device)
-        logger.info(f"Calibration criterion: {criterion_calibration}")
-        with torch.no_grad():
-            temperature_layer = calibrate(
-                model=model,
-                val_loader=val_loader,
-                criterion=criterion_calibration,
-                device=device,
-                num_classes=num_classes,
-            )
-        logger.info("Calibration complete.")
-
-    if temperature_layer:
-        logger.info("Using calibrated model for testing.")
-        temperature_layer.to(device)
-        temperature_layer.eval()
-
-    # --------------------------------------------------------------------------------------------------------------- #
-    # ----------------------------------------------- Confidence Phase ---------------------------------------------- #
-    # --------------------------------------------------------------------------------------------------------------- #
-
-    if cfg.confidence.enabled:
-        logger.info("Evaluating the confidence")
-        logger.info("Computing slide statistics on test set...")
-
-        (
-            train_running_loss,
-            train_embeddings,
-            train_logits,
-            train_labels,
-            train_slide_ids,
-            train_probs,
-            train_predictions,
-            train_etudes,
-            train_original_labels,
-            train_correct_probs,
-            train_incorrect_probs,
-            train_indices,
-        ) = one_epoch(
-            model=model,
-            cfg=cfg,
-            device=device,
-            dataloader=train_loader,
-            optimizer=None,
-            criterion=criterion_test,
-            num_classes=num_classes,
-            slide_to_etude=slide_to_etude,
-            mode="test",
-            temperature_layer=temperature_layer if temperature_layer else None,
-            return_embeddings=False,
-            return_correct_incorrect_probs=False,
-            class_idx=class_idx,
-        )
-        if not skip_validation:
-            (
-                val_running_loss,
-                val_embeddings,
-                val_logits,
-                val_labels,
-                val_slide_ids,
-                val_probs,
-                val_predictions,
-                val_etudes,
-                val_original_labels,
-                val_correct_probs,
-                val_incorrect_probs,
-                val_indices,
-            ) = one_epoch(
-                model=model,
-                cfg=cfg,
-                device=device,
-                dataloader=val_loader,
-                optimizer=None,
-                criterion=criterion_test,
-                num_classes=num_classes,
-                slide_to_etude=slide_to_etude,
-                mode="test",
-                temperature_layer=temperature_layer if temperature_layer else None,
-                return_embeddings=False,
-                return_correct_incorrect_probs=False,
-                class_idx=class_idx,
-            )
-        else:
-            val_logits = np.array([])
-            val_labels = np.array([])
-            val_slide_ids = np.array([])
-            val_probs = np.array([])
-            val_predictions = np.array([])
-
-        (
-            test_running_loss,
-            test_embeddings,
-            test_logits,
-            test_labels,
-            test_slide_ids,
-            test_probs,
-            test_predictions,
-            test_etudes,
-            test_original_labels,
-            test_correct_probs,
-            test_incorrect_probs,
-            test_indices,
-        ) = one_epoch(
-            model=model,
-            cfg=cfg,
-            device=device,
-            dataloader=test_loader,
-            optimizer=None,
-            criterion=criterion_test,
-            num_classes=num_classes,
-            slide_to_etude=slide_to_etude,
-            mode="test",
-            temperature_layer=temperature_layer if temperature_layer else None,
-            return_embeddings=True,
-            return_correct_incorrect_probs=False,
-            class_idx=class_idx,
-        )
-
-        model.eval()
-
-        logger.info(f"Computing slide statistics using {cfg.confidence.compute_confidence_on}...")
-
-        train_df = compute_slide_stats(
-            cfg.confidence.confidence_type,
-            train_slide_ids,
-            train_probs if cfg.confidence.compute_confidence_on == "probs" else train_logits,
-            train_labels,
-            train_predictions,
-            slide_size=cfg.data.num_imgs_per_slide,
-            phase="train",
-        )
-        if not skip_validation and len(val_slide_ids) > 0:
-            val_df = compute_slide_stats(
-                cfg.confidence.confidence_type,
-                val_slide_ids,
-                val_probs if cfg.confidence.compute_confidence_on == "probs" else val_logits,
-                val_labels,
-                val_predictions,
-                slide_size=cfg.data.num_imgs_per_slide,
-                phase="val",
-            )
-        else:
-            val_df = pd.DataFrame()
-
-        test_df = compute_slide_stats(
-            cfg.confidence.confidence_type,
-            test_slide_ids,
-            test_probs if cfg.confidence.compute_confidence_on == "probs" else test_logits,
-            test_labels,
-            test_predictions,
-            slide_size=cfg.data.num_imgs_per_slide,
-            phase="test",
-        )
-
-        try:
-            if skip_validation or val_df.empty:
-                logger.info("Skipping validation data for confidence computation, using train data only")
-                train_confidences, _, test_confidences = compute_confidences(
-                    cfg.confidence.confidence_type,
-                    train_df,
-                    None,
-                    test_df,
-                    model,
-                    device,
-                    num_classes,
-                    num_channels_list=None,
-                )
-            else:
-                train_confidences, val_confidences, test_confidences = compute_confidences(
-                    cfg.confidence.confidence_type,
-                    train_df,
-                    val_df,
-                    test_df,
-                    model,
-                    device,
-                    num_classes,
-                    num_channels_list=None,
-                )
-        except Exception as e:
-            logger.error(f"Error during confidence computation: {e}")
-            logger.warning("Skipping confidence-based analysis")
-
-            traceback.print_exc()
-
-            test_confidences = pd.DataFrame()
-
-        # --------------------------- Experiments --------------------------- #
-
-        else:
-            # --- Experiment 0: Calculate Brier scores ---
-            brier_scores_test = {}
-            for class_idx in range(num_classes):
-                binary_labels = (test_labels == class_idx).astype(int)
-                class_probs = test_probs[:, class_idx]
-                brier_score = brier_score_loss(binary_labels, class_probs)
-                brier_scores_test[f"Brier Score Class {class_idx}"] = brier_score
-            if cfg.wandb.enabled:
-                wandb.log(brier_scores_test)
-
-            # --- Experiment 1: Confidence Thresholding ---
-            logger.info("Computing Confidence Thresholding..")
-            confidence_thresholding_metrics = evaluate_confidence_thresholding(
-                test_df,
-                confidence_col="confidence_score",
-                label_col="true_label",
-                prediction_col="final_prediction",
-                num_thresholds=100,
-                plot=True,
-            )
-            if cfg.wandb.enabled and not cfg.slurm.enabled:
-                wandb.log({"test/confidence_thresholding": wandb.Image(confidence_thresholding_metrics["figure"])})
-                plt.close(confidence_thresholding_metrics["figure"])
-
-            # --- Experiment 2: Stratified Performance ---
-            if not test_confidences.empty:
-                logger.info("Computing stratified performance metrics...")
-                performance_metrics = compute_performance_by_confidence(test_confidences)
-                if cfg.wandb.enabled and not cfg.slurm.enabled:
-                    wandb.log({"test/performance_by_confidence": wandb.Table(dataframe=performance_metrics)})
 
     logger.info("Testing complete.")
     plt.close("all")
@@ -1013,10 +764,6 @@ def main(cfg: DictConfig):
             print(f"Loading best weights from {best_weights_path}")
             load_model_weights(model, best_weights_path)
             test_one_epoch(cfg, model, device, num_classes, class_idx)
-
-        if cfg.training.use_temperature_scaling and cfg.training.loss_type == "ce":
-            calibration_results = calibrate_model(cfg, model, val_loader, criterion, device, num_classes)
-            log_calibration_plots(calibration_results, cfg)
 
     send_logs_to_wandb(cfg, flat_config)
 

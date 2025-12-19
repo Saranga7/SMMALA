@@ -10,11 +10,13 @@ slurm:
 
 wandb:
  enabled: False
+ entity: saranga7
+ project: "SMALA_embeddings"
 
 augmentations:
-  enable_augmentation: True # if True, k augmented images' embeddings will be computed per image (used for training)
-  num_augmentations: 10
-  save_augmented_images: False
+  enable_augmentation: False # if True, 'num_augmentations' augmented images' embeddings will be computed per image (used for training)
+  num_augmentations: 10      # number of augmentations to be applied per image
+  save_augmented_images: False # if True, augmented images will be saved in out_dir
 
 model:
  name: 'dinov3_vitb16'
@@ -22,12 +24,12 @@ model:
  ssl_pre_trained_encoder_path: null
  offline: false
  freeze_layers: true
- dinov3_repo_path: "/projects/smala/Saranga/dinov3"
+ dinov3_repo_path: "../dinov3"
 
 data:
- img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
- test_set_img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
- out_dir: "/projects/smala3/Saranga/public_repo_smala/preprocessed_data/embeddings/"
+ img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired" # directory containing all images
+ test_set_img_dir: "/projects/smala3/Saranga/preprocessed_data/full_reacquired" # in case testing set images are different (for example crops)
+ out_dir: "../preprocessed_data/embeddings/" # directory to save image embeddings
  num_workers: 8
  batch_size: 128
  random_seed: 7

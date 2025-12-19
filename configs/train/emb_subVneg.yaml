@@ -10,65 +10,65 @@ slurm:
 
 wandb:
  enabled: True
- entity: saranga7
- project: "SMALA_test_runs"
- run_name: null
+ entity: saranga7 # the wandb entity (user or team) to log runs to
+ project: "SMALA_test_runs" # the wandb project name
+ run_name: null # set to override default run name
 
 data:
- random_seed: 42
+ random_seed: 42 # set seed for reproducibility
  dataset: rawmicroscope
- fold_index: 0
+ fold_index: 0 # [0,1,2,3] : index of the fold to be used for training/testing 
  classification_type: "subVneg"  
  root_dir: "preprocessed_data"
  data_train_filepath: null
  data_test_filepath: 
- dataset_path: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
- metadata_filepath: "metadata/slides_metadata.csv"
- aug_embeddings_path: null
- embeddings_path: null
+ dataset_path: "/projects/smala3/Saranga/preprocessed_data/full_reacquired" # root directory containing all images
+ metadata_filepath: "metadata/slides_metadata.csv" # path to slides metadata csv file
+ aug_embeddings_path: null # path to augmented image embeddings (mandatory if use_imgs_or_embeddings is "embeddings"). If null, training will not benefit from augmentations.
+ embeddings_path: null # path to image embeddings (mandatory if use_imgs_or_embeddings is "embeddings")
  num_workers: 8
  img_channels: 3
- data_collection_method: "image"  # ["image", "slide"]
- num_imgs_per_slide: 10
+ data_collection_method: "image"  # ["image", "slide"] : whether image-level or slide-level classification
+ num_imgs_per_slide: 10 # [1,2,...,10] : number of images to sample per slide during training 
  num_folds: 1
  shuffle_labels: False
  use_hard_balancing: False
  use_monte_carlo: false
  use_wce: false
- num_classes: 3 # original number of classes
+ num_classes: 2 # original number of classes
  class_idx: [0, 1]  # [0,1] for binary, [0,1,2] for 3-classes
  merge_classes_for_binary: false  # if true, merges classes according to class_merge_mapping
  class_merge_mapping:  # mapping for class fusion
    0: [0]      
-   1: [1, 2]
+   1: [1]
  skip_validation: true
 
 
 
 model:
- use_imgs_or_embeddings: "embeddings"  # ["images", "embeddings"]
- name: 'dinov3_vitb16'
+ use_imgs_or_embeddings: "embeddings"  # ["images", "embeddings"] : whether to use images or precomputed embeddings as model input
+ name: 'dinov3_vitb16' # model name 
  weights_path: "./weights/"
  offline: false
  freeze_layers: true
- use_complex_head: 2
+ use_complex_head: 2 # varying complexity of classification head
  use_lora: false
  lora_rank: 4
  lora_alpha: 0.2
  lora_num_blocks: 3
  encoder_weights_path: null
 
- dinov3_repo_path: "./dinov3"
+ dinov3_repo_path: "./dinov3" # path to dinov3 repo
 
 
- # Attention and covariables config
+ # Attention config
  attention:
    enabled: true
    num_heads: 4
    dropout: 0.1
 
  # Slide Aggregation
- slide_aggregator_method: "median"
+ slide_aggregator_method: "median" # different image-level or slide-level aggregation methods
 
 optimizer:
  name: "adam"
@@ -80,7 +80,7 @@ optimizer:
 training:
  enabled: true
  max_epochs: 5
- use_advanced_augmentation: true
+ use_advanced_augmentation: true # irrelavent if embeddings are used as input
  use_gradual_unfreezing: false
  unfreeze_strategy: "fixed" 
  unfreeze_adaptive_decay_rate: 100
