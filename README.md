@@ -41,6 +41,13 @@ Download the images from [here](https://huggingface.co/datasets/nicoboou/smmala/
 
 ### 3️⃣ Setup virtual environment
 
+Make sure you have [uv](https://docs.astral.sh/uv/) installed.
+
+```bash
+uv venv
+uv sync
+```
+
 ### 4️⃣ Generate embeddings
 
 Adjust the config file: `configs/get_image_embeddings.yaml`. Then,
