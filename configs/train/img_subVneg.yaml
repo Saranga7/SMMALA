@@ -98,4 +98,4 @@ testing:
  use_mc_dropout: false
  mc_samples: 50
 
-devices: [0]
+devices: [0] # gpu device index

@@ -128,6 +128,12 @@ bash run_training.sh
 
 After training, model weights are by default saved in `weights/custom`
 
+If the user logs the experiments on their wandb, they can enter their wandb project name generate a tabular summary using:
+
+```bash
+python results_wandb_table.py
+```
+
 
 ## Results
 

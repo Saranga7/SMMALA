@@ -2,7 +2,6 @@ folds=(0)
 seeds=(7)
 aggregation="deepset" 
 model="dinov3_vitb16" 
-classification_type="subVneg" 
 project="SMALA_test_runs"
 
 for i in "${!folds[@]}"; do
@@ -13,7 +12,7 @@ for i in "${!folds[@]}"; do
 
     python train.py \
       --config-path="configs/train" \
-      --config-name="img_${classification_type}.yaml" \
+      --config-name="img_subVneg.yaml" \
       wandb.project=$project \
       wandb.run_name="${model}_${aggregation}_fold${fold}_seed${seed}" \
       data.random_seed=$seed \

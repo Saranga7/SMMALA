@@ -1,8 +1,7 @@
 folds=(0 1 2 3)
 seeds=(7 24 666 1234)
-aggregation="deepset" 
+aggregation="mean" 
 model="dinov3_vitb16" 
-classification_type="subVneg" 
 aug_embeddings_path="preprocessed_data/embeddings/aug_img_embeddings/${model}"
 embeddings_path="preprocessed_data/embeddings/img_embeddings/${model}"
 project="SMALA_test_runs"
@@ -15,7 +14,7 @@ for i in "${!folds[@]}"; do
 
     python train.py \
       --config-path="configs/train" \
-      --config-name="emb_${classification_type}.yaml" \
+      --config-name="emb_subVneg.yaml" \
       wandb.project=$project \
       wandb.run_name="${model}_${aggregation}_fold${fold}_seed${seed}" \
       data.random_seed=$seed \
