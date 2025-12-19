@@ -13,7 +13,7 @@ This project is a collaboration between the [IRD](https://www.ird.fr) and [ENS U
 The project depends on the `dinov3` submodule. To ensure reproducibility, clone the repository **with submodules**:
 
 ```bash
-git clone --recurse-submodules <your-repo-url>
+git clone --recurse-submodules https://github.com/Saranga7/SMMALA.git
 
 
 If you already cloned without submodules, initialize them with:
