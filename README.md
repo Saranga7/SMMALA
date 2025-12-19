@@ -1,4 +1,4 @@
-# 🦠 Detection of Malaria Infection from parasite-free blood smears
+#  SMMALA 🦠 Detection of Malaria Infection from parasite-free blood smears
 
 ## Introduction
 
