@@ -9,7 +9,6 @@ preprocessed_data/embeddings/
 ._.DS_Store
 *.xml
 *.jpg
-*.png
 *.pyc
 *.ckpt
 *.pth
