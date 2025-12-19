@@ -13,7 +13,6 @@ preprocessed_data/embeddings/
 *.pyc
 *.ckpt
 *.pth
-*.csv
 *.tiff
 *.svg
 *.log
@@ -30,3 +29,5 @@ preprocessed_data/embeddings/
 /results
 /output_logs
 viz_dataset/thumbs
+
+lol.py

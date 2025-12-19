@@ -23,7 +23,7 @@ data:
  data_train_filepath: null
  data_test_filepath: 
  dataset_path: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
- metadata_filepath: "metadata/11_12_2025/smmala-reimaged-632_slides-metadata_19_05_2025_Eleanor-covariables.csv"
+ metadata_filepath: "metadata/slides_metadata.csv"
  aug_embeddings_path: null
  embeddings_path: null
  num_workers: 8
