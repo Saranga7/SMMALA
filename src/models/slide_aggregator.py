@@ -14,7 +14,6 @@ class SlideAggregator(nn.Module):
     - "deepset": A DeepSets architecture (permutation-invariant)
     - "gated_attention": Ilse et al. (2018) attention-based MIL (permutation-invariant)
     - "transformer_attention": Uses PyTorch's MultiheadAttention (permutation-sensitive)
-    - "cdf_mlp": MLP-based aggregation on ordered FoV logits
 
     If `out_features` is specified, a final linear head produces classification logits of size [batch_size, out_features].
 
@@ -49,7 +48,6 @@ class SlideAggregator(nn.Module):
                          or flatten them in "flat_mlp".
             k_top: For top-k pooling, the number of top patches to average.
 
-            cdf_mlp: MLP that takes ordered FoV probabilities as input and outputs slide-level prediction.
         """
         super().__init__()
 
@@ -146,15 +144,6 @@ class SlideAggregator(nn.Module):
             )
             self.norm = nn.LayerNorm(self.embed_dim)
         
-        elif self.method == "cdf_mlp":
-            self.psi = nn.Sequential(
-                nn.Linear(self.num_foVs, 128),
-                nn.PReLU(),
-                nn.Linear(128, 64),
-                nn.PReLU(),
-                nn.Linear(64, out_features)
-            )
-
 
 
         elif self.method not in ["mean", "max", "topk", "vote"]:
@@ -165,7 +154,7 @@ class SlideAggregator(nn.Module):
             )
 
         # Classification head
-        if out_features is not None and self.method != "cdf_mlp":
+        if out_features is not None:
             self.head = nn.Linear(self.embed_dim, out_features)
         else:
             self.head = None
@@ -200,8 +189,6 @@ class SlideAggregator(nn.Module):
                 return self.forward_gated_attention(embeddings)
             elif self.method == "transformer_attention":
                 return self.forward_transformer_attention(embeddings)
-            elif self.method == "cdf_mlp":
-                return self.forward_cdf_mlp(embeddings)
             else:
                 raise ValueError(f"Unknown method: {self.method}")
         
@@ -326,26 +313,4 @@ class SlideAggregator(nn.Module):
         return attended[:, 0]  # [B, D]
 
 
-    def forward_cdf_mlp(self, embeddings):
-        """
-        MLP-based aggregator on FoV output logits (from classifier head):
-        """
-        if embeddings.dim() > 2:
-            B, N, D = embeddings.shape
-                     # Flatten bags into instances
 
-            embeddings = embeddings.view(B * N, D)
-            with torch.no_grad():
-                logits = self.model(embeddings)  # [B*N, num_classes]
-            logits = logits.view(B, N, -1)  # [B, N, num_classes]
-
-            if self.out_features == 1:
-                assert logits.size(-1) == 1, "For binary classification, out_features should be 1."
-                logits = logits.squeeze(-1)  # [B, N]
-        else:
-            logits = embeddings  # [B, N] or [B, N, num_classes]
-            
-        # sort logits in ascending order to form a CDF-like input
-        logits = torch.sort(logits, dim = 1, descending=False)[0]  # [B, N, num_classes] or [B, N]
-  
-        return self.psi(logits)  # [B, out_features]

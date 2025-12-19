@@ -25,10 +25,10 @@ data:
  dataset_path: "/projects/smala3/Saranga/preprocessed_data/full_reacquired" # root directory containing all images
  metadata_filepath: "metadata/slides_metadata.csv" # path to slides metadata csv file
  aug_embeddings_path: null # path to augmented image embeddings (mandatory if use_imgs_or_embeddings is "embeddings"). If null, training will not benefit from augmentations.
- embeddings_path: "preprocessed_data/embeddings/img_embeddings/${model.name}" # path to image embeddings (mandatory if use_imgs_or_embeddings is "embeddings")
+ embeddings_path: null # path to image embeddings (mandatory if use_imgs_or_embeddings is "embeddings")
  num_workers: 8
  img_channels: 3
- data_collection_method: "image"  # ["image", "slide"] : whether image-level or slide-level classification
+ data_collection_method: "slide"  # ["image", "slide"] : whether image-level or slide-level classification
  num_imgs_per_slide: 10 # [1,2,...,10] : number of images to sample per slide during training 
  num_folds: 1
  shuffle_labels: False
@@ -41,12 +41,12 @@ data:
  class_merge_mapping:  # mapping for class fusion
    0: [0]      
    1: [1]
- skip_validation: true  # keep it true to skip validation during training, as our dataset is not large enough
+ skip_validation: true # keep it true to skip validation during training, as our dataset is not large enough
 
 
 
 model:
- use_imgs_or_embeddings: "embeddings"  # ["images", "embeddings"] : whether to use images or precomputed embeddings as model input
+ use_imgs_or_embeddings: "images"  # ["images", "embeddings"] : whether to use images or precomputed embeddings as model input
  name: 'dinov3_vitb16' # model name 
  weights_path: "./weights/"
  offline: false
@@ -71,7 +71,7 @@ model:
 
 optimizer:
  name: "adam"
- batch_size: 256
+ batch_size: 64
  lr: 1e-5
  eta_min: 1e-7
  weight_decay: 0.01
@@ -94,7 +94,7 @@ training:
 
 testing:
  enabled: true
- weights_filename: "weights/custom/weights_mean_subVneg_fold0_seed7_dinov3_vitb16_20251219_172021.pth"
+ weights_filename: "weights/custom/weights_deepset_subVneg_fold0_seed7_dinov3_vitb16_20251219_181257.pth"
  use_mc_dropout: false
  mc_samples: 50
 

@@ -36,26 +36,8 @@ def get_model(cfg, num_classes, device):
     model = _apply_lora(model, cfg)
 
     if cfg.data.data_collection_method == "slide":
-        if cfg.model.slide_aggregator_method == "cdf_mlp":
-            logger.info("Using CDF_MLP slide aggregator")
-            # this method needs the trained classifier head to output FoV probabilities
-            model = _add_head(model, cfg, out_features, device)
-            assert cfg.model.fov_classifier_head_weights_path is not None, "Path to FoV classifier head weights must be provided for CDF_MLP slide aggregator"
-            model.load_state_dict(torch.load(cfg.model.fov_classifier_head_weights_path, map_location=device))
-            logger.info("FoV classifier head weights loaded successfully.")
-            # freeze the entire model 
-            model.eval()
-            for param in model.parameters():
-                param.requires_grad = False
-
         model = _add_slide_aggregator(model, cfg, out_features, 
                                         use_embed_transform = False)
-
-        for name, p in model.named_parameters():
-            if "psi" in name:
-                assert p.requires_grad, f"{name} should be trainable"
-            else:
-                assert not p.requires_grad, f"{name} should be frozen"
 
     elif cfg.data.data_collection_method == "image":
         model = _add_head(model, cfg, out_features, device)
