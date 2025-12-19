@@ -22,7 +22,6 @@ from tqdm import tqdm
 from pathlib import Path
 
 from src.models.cnn import CustomCNN
-from src.models.covariable_embedder import EmbeddingsFuser
 from src.utils.utils_visualization import (
     plot_embedding_space,
     plot_all_embedding_spaces,
@@ -323,11 +322,8 @@ def calculate_metrics_by_slide(cfg, labels, preds, probs, slide_ids, num_classes
 def extract_image_features(model, inputs, device, before_last_layer=False):
     inputs = inputs.to(device)
 
-    # Handle nested models
-    if isinstance(model, EmbeddingsFuser):
-        base_model = model.model
-    else:
-        base_model = model
+    
+    base_model = model
 
     if isinstance(base_model, CustomCNN):
         features = base_model.features_extraction(inputs)
@@ -349,12 +345,6 @@ def extract_image_features(model, inputs, device, before_last_layer=False):
         features = features_dict["x_norm_clstoken"]
     elif hasattr(base_model, "forward_features") and "dino" not in base_model.__class__.__name__.lower():
         features = base_model.forward_features(inputs)
-
-    elif "chadavit" in base_model.__class__.__name__.lower():
-        base_model.mixed_channels = False
-        batch_size = inputs.shape[0] // 3  # Calculate batch size from total channels
-        num_channels_list = [3] * batch_size
-        features = model(x=inputs, index=0, list_num_channels=[num_channels_list]).flatten(start_dim=1)
 
     else:
         features = base_model(inputs)

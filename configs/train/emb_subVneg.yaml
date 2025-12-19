@@ -9,19 +9,20 @@ slurm:
  enabled: False
 
 wandb:
- enabled: False
+ enabled: True
  entity: saranga7
- project: "SMALA_Reacq_AugEmb"
+ project: "SMALA_test_runs"
  run_name: null
 
 data:
- random_seed: 19
+ random_seed: 42
  dataset: rawmicroscope
  fold_index: 0
  classification_type: "subVneg"  
  root_dir: "preprocessed_data"
  data_train_filepath: null
  data_test_filepath: 
+ dataset_path: "/projects/smala3/Saranga/preprocessed_data/full_reacquired"
  metadata_filepath: "metadata/11_12_2025/smmala-reimaged-632_slides-metadata_19_05_2025_Eleanor-covariables.csv"
  aug_embeddings_path: null
  embeddings_path: null
@@ -57,7 +58,7 @@ model:
  lora_num_blocks: 3
  encoder_weights_path: null
 
- dinov3_repo_path: "/projects/smala/Saranga/dinov3"
+ dinov3_repo_path: "./dinov3"
 
 
  # Attention and covariables config
@@ -105,4 +106,4 @@ confidence:
  use_mc_dropout: false
  mc_samples: 50
 
-devices: [1]
+devices: [0]

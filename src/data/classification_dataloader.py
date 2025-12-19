@@ -44,6 +44,7 @@ def prepare_datasets(
 
     train_dataset = RawMicroscope(
             root_dir=kwargs["root_dir"],
+            dataset_path=kwargs.get("dataset_path", None),
             data=train_data,
             train_type="train",
             transform=T_train,
@@ -64,6 +65,7 @@ def prepare_datasets(
     if not skip_validation:
         val_dataset = RawMicroscope(
             root_dir=kwargs["root_dir"],
+            dataset_path=kwargs.get("dataset_path", None),
             data=val_data,
             train_type="val",
             transform=T_val,

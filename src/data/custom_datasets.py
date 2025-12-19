@@ -21,6 +21,7 @@ class RawMicroscope(Dataset):
         self,
         root_dir: Path,
         data,
+        dataset_path: Path = None,
         train_type: str = "train",
         transform=None,
         num_imgs_per_slide: int = None,
@@ -40,6 +41,7 @@ class RawMicroscope(Dataset):
     ):
         # random.seed(42)
         self.root_dir = root_dir
+        self.dataset_path = dataset_path
         self.train_type = train_type
         self.transform = transform
         self.num_imgs_per_slide = num_imgs_per_slide
@@ -134,8 +136,10 @@ class RawMicroscope(Dataset):
             if label not in self.class_idx:
                 continue 
            
-
-            pattern = os.path.join(self.root_dir, "full_reacquired", f"{slide_id}*{image_id}.tiff")
+            if self.dataset_path is not None:
+                pattern = os.path.join(self.dataset_path, f"{slide_id}*{image_id}.tiff")
+            else:
+                pattern = os.path.join(self.root_dir, "dataset", f"{slide_id}*{image_id}.tiff")
             file_path = sorted(glob.glob(pattern))
 
             if len(file_path) != 1:

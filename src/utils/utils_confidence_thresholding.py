@@ -44,9 +44,6 @@ if torch.__version__ >= "2.2.0" and not _idr_torch_available:
 
 
 from tqdm import tqdm
-
-from src.models.chadavit import ChAdaViT
-from src.models.covariable_embedder import EmbeddingsFuser
 from src.utils.utils_visualization import (
     create_linear_confidence_plot,
 )
@@ -59,30 +56,12 @@ def get_confidence_distribution(model, dataloader, device, num_classes):
     model.eval()
     confidences = []
     with torch.no_grad():
-        if isinstance(model, ChAdaViT):
-            for batch in tqdm(dataloader, desc="Confidence Distribution", leave=False):
-                inputs = batch[0].to(device)
-                num_channels_list = batch[6] if len(batch) == 7 else batch[5]
-
-                model.mixed_channels = False
-                feats = model(x=inputs, index=0, list_num_channels=[num_channels_list]).flatten(start_dim=1)
-                outputs = model.head(feats)
-                probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
-                max_probs = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
-                confidences.extend(max_probs)
-
-        else:
-            for batch in tqdm(dataloader, desc="Confidence Distribution", leave=False):
-                inputs = batch[0].to(device)
-                if isinstance(model, EmbeddingsFuser):
-                    covariables = {k: v.to(device) for k, v in batch[2].items()} if batch[2] else None
-                    outputs = model(inputs, covariables)
-                else:
-                    covariables = None
-                    outputs = model(inputs)
-                probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
-                max_probs = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
-                confidences.extend(max_probs)
+        for batch in tqdm(dataloader, desc="Confidence Distribution", leave=False):
+            inputs = batch[0].to(device)
+            outputs = model(inputs)
+        probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
+        max_probs = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
+        confidences.extend(max_probs)
     return confidences
 
 
@@ -102,88 +81,32 @@ def collect_slide_confidences(model, dataloader, device, num_classes):
     slide_data = {}
 
     with torch.no_grad():
-        if isinstance(model, ChAdaViT):
-            for batch in tqdm(dataloader, desc="Collecting slide confidences"):
-                if len(batch) == 7:
-                    (
-                        inputs,
-                        labels,
-                        _,
-                        slide_ids,
-                        original_labels,
-                        indices,
-                        num_channels_list,
-                    ) = batch
-                else:
-                    (
-                        inputs,
-                        labels,
-                        slide_ids,
-                        original_labels,
-                        indices,
-                        num_channels_list,
-                    ) = batch
 
-                model.mixed_channels = False
-                inputs = inputs.to(device)
+        for batch in tqdm(dataloader, desc="Collecting slide confidences"):
+            inputs, labels, slide_ids, original_labels, indices = batch
 
-                feats = model(x=inputs, index=0, list_num_channels=[num_channels_list]).flatten(start_dim=1)
-                outputs = model.head(feats)
+            inputs = inputs.to(device)
+            outputs = model(inputs)
 
-                probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
-                confidences = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
+            probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
+            confidences = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
 
-                # Store data for each slide
-                for i, slide_id in enumerate(slide_ids):
-                    if slide_id not in slide_data:
-                        slide_data[slide_id] = {
-                            "confidences": [],
-                            "true_label": labels[i].item(),
-                            "original_label": original_labels[i].item(),
-                            "predictions": [],
-                            "image_indices": [],
-                        }
+            # Store data for each slide
+            for i, slide_id in enumerate(slide_ids):
+                if slide_id not in slide_data:
+                    slide_data[slide_id] = {
+                        "confidences": [],
+                        "true_label": labels[i].item(),
+                        "original_label": original_labels[i].item(),
+                        "predictions": [],
+                        "image_indices": [],
+                    }
 
-                    slide_data[slide_id]["confidences"].append(confidences[i])
-                    pred = (probs[i] > 0.5).int().item() if num_classes == 2 else probs[i].argmax().item()
-                    slide_data[slide_id]["predictions"].append(pred)
-                    if indices is not None:
-                        slide_data[slide_id]["image_indices"].append(indices[i].item())
-
-        else:
-            for batch in tqdm(dataloader, desc="Collecting slide confidences"):
-                if len(batch) == 6:
-                    inputs, labels, covariables, slide_ids, original_labels, indices = batch
-                else:
-                    inputs, labels, slide_ids, original_labels, indices = batch
-
-                inputs = inputs.to(device)
-                if isinstance(model, EmbeddingsFuser):
-                    covariables = {k: v.to(device) for k, v in batch[2].items()} if batch[2] else None
-                    outputs = model(inputs, covariables)
-                else:
-                    covariables = None
-                    outputs = model(inputs)
-
-                probs = F.softmax(outputs, dim=1) if num_classes > 2 else torch.sigmoid(outputs)
-                confidences = probs.max(dim=1)[0].cpu().numpy() if num_classes > 2 else probs.squeeze().cpu().numpy()
-
-                # Store data for each slide
-                for i, slide_id in enumerate(slide_ids):
-                    if slide_id not in slide_data:
-                        slide_data[slide_id] = {
-                            "confidences": [],
-                            "true_label": labels[i].item(),
-                            "original_label": original_labels[i].item(),
-                            "predictions": [],
-                            "image_indices": [],
-                        }
-
-                    slide_data[slide_id]["confidences"].append(confidences[i])
-                    pred = (probs[i] > 0.5).int().item() if num_classes == 2 else probs[i].argmax().item()
-                    slide_data[slide_id]["predictions"].append(pred)
-                    if indices is not None:
-                        slide_data[slide_id]["image_indices"].append(indices[i].item())
+                slide_data[slide_id]["confidences"].append(confidences[i])
+                pred = (probs[i] > 0.5).int().item() if num_classes == 2 else probs[i].argmax().item()
+                slide_data[slide_id]["predictions"].append(pred)
+                if indices is not None:
+                    slide_data[slide_id]["image_indices"].append(indices[i].item())
 
     # Compute final slide-level predictions
     for slide_id in slide_data:

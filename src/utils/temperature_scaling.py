@@ -7,7 +7,6 @@ from pathlib import Path
 
 from sklearn.metrics import roc_auc_score
 
-from src.models.chadavit import ChAdaViT
 
 logger = logging.getLogger(__name__)
 

@@ -9,11 +9,7 @@ from pathlib import Path
 from PIL import Image
 import random
 
-from src.data.splitters.microscope_kfold_splitter import MicroscopeKFoldSplitter
-from src.data.classification_dataloader import (
-    prepare_datasets,
-    prepare_transforms,
-)
+from src.data.classification_dataloader import prepare_datasets
 from src.data.custom_datasets import RawMicroscope 
 from src.data.collate import collate_func, collate_func_embeddings
 
@@ -31,10 +27,8 @@ class RandomRotate90:
 
 
 def prepare_datasets_and_transforms(cfg):
-    if cfg.training.use_advanced_augmentation:
-        T_train, T_val = get_advanced_transforms()
-    else:
-        T_train, T_val = prepare_transforms(cfg.data.dataset)
+
+    T_train, T_val = get_advanced_transforms()
 
     train_path = Path(cfg.data.root_dir) / Path(cfg.data.data_train_filepath)
     metadata_path = Path(cfg.data.root_dir) / Path(cfg.data.metadata_filepath)
@@ -83,6 +77,7 @@ def get_test_dataset(
    
     test_dataset = RawMicroscope(
         root_dir=cfg.data.root_dir,
+        dataset_path=cfg.data.dataset_path,
         data=test_data,
         train_type="test",
         transform=T_test,

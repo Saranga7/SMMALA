@@ -12,7 +12,6 @@ from src.utils.temperature_scaling import calibrate_model
 from src.common.losses.focal import FocalLoss
 from src.common.losses.sosr import SOSRLoss
 from src.utils.utils_eval import extract_image_features
-from src.models.chadavit import ChAdaViT
 from src.models.slide_aggregator import SlideAggregator
 from src.utils.utils_model import should_merge_classes, merge_classes_by_mapping
 
