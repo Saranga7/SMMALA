@@ -11,7 +11,7 @@ slurm:
 wandb:
  enabled: True
  entity: saranga7 # the wandb entity (user or team) to log runs to
- project: "SMALA_test_runs" # the wandb project name
+ project: "SMALA_embedding_expts" # the wandb project name
  run_name: null # set to override default run name
 
 data:

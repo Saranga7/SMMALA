@@ -11,7 +11,7 @@ slurm:
 wandb:
  enabled: True
  entity: saranga7 # the wandb entity (user or team) to log runs to
- project: "SMALA_test_runs" # the wandb project name
+ project: "SMALA_img_expts" # the wandb project name
  run_name: null # set to override default run name
 
 data:
@@ -50,7 +50,7 @@ model:
  name: 'dinov3_vitb16' # model name 
  weights_path: "./weights/"
  offline: false
- freeze_layers: true
+ freeze_layers: true # if false, entire model is trainable
  use_complex_head: 2 # varying complexity of classification head
  use_lora: false
  lora_rank: 4
@@ -79,7 +79,7 @@ optimizer:
 training:
  enabled: true
  max_epochs: 2
- use_advanced_augmentation: true # irrelavent if embeddings are used as input
+ use_advanced_augmentation: true # keep this true, irrelavent if embeddings are used as input
  use_gradual_unfreezing: false
  unfreeze_strategy: "fixed" 
  unfreeze_adaptive_decay_rate: 100
