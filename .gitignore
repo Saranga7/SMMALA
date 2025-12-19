@@ -30,3 +30,6 @@ weights/custom/
 viz_dataset/thumbs
 
 lol.py
+dinov3/**/*.png
+dinov3/**/outputs/
+dinov3/**/results/
