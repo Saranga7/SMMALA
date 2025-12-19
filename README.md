@@ -14,12 +14,13 @@ The project depends on the `dinov3` submodule. To ensure reproducibility, clone 
 
 ```bash
 git clone --recurse-submodules https://github.com/Saranga7/SMMALA.git
-
+```
 
 If you already cloned without submodules, initialize them with:
 
 ```bash
 git submodule update --init --recursive
+```
 
 ### 2️⃣ Download dinov3 weights
 
