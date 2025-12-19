@@ -78,7 +78,7 @@ optimizer:
 
 training:
  enabled: true
- max_epochs: 2
+ max_epochs: 500
  use_advanced_augmentation: true # keep this true, irrelavent if embeddings are used as input
  use_gradual_unfreezing: false
  unfreeze_strategy: "fixed" 
