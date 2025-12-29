@@ -37,7 +37,9 @@ weights/pretrained
 
 ### 2️⃣ Download data
 
-Download the images from [here](https://huggingface.co/datasets/nicoboou/smmala/tree/main). Preferably store the images at `preprocessed_data/dataset`, otherwise mandatorily set data.dataset_path in the config.
+Please place a request for the data with the corresponding author.
+
+Preferably store the images at `preprocessed_data/dataset`, otherwise the user needs to mandatorily set data.dataset_path in the config.
 
 ### 3️⃣ Setup virtual environment
 
@@ -46,6 +48,11 @@ Make sure the user has [uv](https://docs.astral.sh/uv/) installed.
 ```bash
 uv venv
 uv sync
+```
+Activate the virtual env
+
+```bash
+source .venv/bin/activate
 ```
 
 ## Model training/testing
